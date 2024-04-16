@@ -20,12 +20,18 @@ FIXFLAGS = -p ${PADVALUE} -i "${GAMEID}" -k "${LICENSEE}" -l ${OLDLIC} -m ${MBC}
 SRCS := src/print.asm
 OBJS := $(addprefix obj/, $(addsuffix .o, $(notdir $(basename $(SRCS)))))
 
+default: makedir all
+
 all: ${ROM}
 .PHONY: all
 
 clean:
 	rm -rf bin obj
 .PHONY: clean
+
+makedir:
+	mkdir -p obj bin
+.PHONY: makedir
 
 ${ROM}: ${OBJS}
 	rgblink -o ${ROM} ${OBJS}
