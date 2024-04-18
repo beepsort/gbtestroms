@@ -17,18 +17,23 @@ EntryPoint:
     ld A, $04
     ld [$FFFF], A  ;; enable timer interrupts
     ei
-    ld A, $00
+    ld A, $02
     ld [$FF06], A ;; Set TMA
     ld [$FF05], A ;; Write to TIMA to reset to TMA
     ld A, $05 ;; TAC enable & 4M clock select
     ld [$FF07], A ;; write to TAC
-    ld E, $FF
-TimerLoop:
-    ld A, [$C000] ;4
-    call SerialWriteNum ; 6
-    dec E
-    jp NZ,TimerLoop
-    ld A, [$C000] ;; load count of timer interrupts
+    ld HL, $C000
+WaitForTimer1:
+    ld A, [HL] ; 2
+    cp A, 1 ; 4
+    jr NZ, WaitForTimer1 ; 7 (3/2)
+    ld B, 0 ; 2
+WaitForTimer2:
+    ld A, [HL] ; 2
+    inc B ; 1
+    cp A, 2 ; 2
+    jr NZ, WaitForTimer2 ; 3/2
+    ld A, B
     call SerialWriteNum
     jp Done
 
@@ -43,12 +48,12 @@ TimerHandler:
 ; Param: A
 ; Return: A: tens and ones digits, B: hundreds digit
 bcd8bit:
-    swap A ; 2
-    ld B, A ; 3
-    and $0F ; 5
-    or A ; reset half carry ; 6
-    daa ; A=0-21 ; 7
-    sla B ; 9
+    swap A
+    ld B, A
+    and $0F
+    or A ; reset half carry
+    daa ; A=0-21
+    sla B
     adc A
     daa
     sla B
